@@ -1,65 +1,212 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { CheckCircle, Calendar, Video, BookOpen, Target, MessageCircle } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative bg-gradient-to-b from-muted/50 to-white py-20 lg:py-32">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+                Aprende inglés de forma{" "}
+                <span className="text-primary">personalizada</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Clases online one-to-one adaptadas a tus objetivos. Mejora tu fluidez,
+                prepárate para entrevistas de trabajo o alcanza la certificación que necesitas.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/registro">
+                  <Button size="lg" className="bg-accent hover:bg-accent/90 text-lg px-8">
+                    Agenda tu clase gratuita
+                  </Button>
+                </Link>
+                <Link href="/planes">
+                  <Button size="lg" variant="outline" className="text-lg px-8">
+                    Ver planes
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Sin compromiso. Tu primera clase es gratis.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section id="about" className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+              <div className="aspect-square bg-muted rounded-2xl flex items-center justify-center">
+                <div className="text-center p-8">
+                  <div className="w-32 h-32 bg-primary/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <span className="text-4xl font-bold text-primary">UF</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Foto del profesor</p>
+                </div>
+              </div>
+              <div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  Hola, soy Ulises Fairlie
+                </h2>
+                <p className="text-muted-foreground mb-4">
+                  Soy profesor de inglés con más de 5 años de experiencia enseñando a
+                  estudiantes de todos los niveles. Mi enfoque se centra en la comunicación
+                  real y práctica.
+                </p>
+                <p className="text-muted-foreground mb-6">
+                  He ayudado a cientos de alumnos a alcanzar sus metas: desde conseguir
+                  trabajo en empresas internacionales hasta aprobar exámenes de certificación
+                  como TOEFL e IELTS.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold text-primary">500+</div>
+                    <div className="text-sm text-muted-foreground">Alumnos</div>
+                  </div>
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-2xl font-bold text-primary">5+</div>
+                    <div className="text-sm text-muted-foreground">Años de experiencia</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Method Section */}
+        <section id="method" className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Mi metodología
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Un enfoque práctico y personalizado que te ayudará a hablar inglés
+                con confianza desde la primera clase.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Target className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Objetivos claros</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Definimos tus metas desde el inicio y creamos un plan personalizado
+                    para alcanzarlas.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageCircle className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Conversación real</h3>
+                  <p className="text-sm text-muted-foreground">
+                    El 80% de la clase es práctica oral. Aprenderás hablando, no solo
+                    estudiando gramática.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BookOpen className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Material adaptado</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Contenido relevante para ti: desde vocabulario de negocios hasta
+                    preparación de entrevistas.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* How it Works Section */}
+        <section className="py-20 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                ¿Cómo funciona?
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Comenzar es muy sencillo. En solo 3 pasos estarás listo para tu primera clase.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-accent" />
+                </div>
+                <div className="text-sm font-medium text-accent mb-2">Paso 1</div>
+                <h3 className="font-semibold mb-2">Crea tu cuenta</h3>
+                <p className="text-sm text-muted-foreground">
+                  Regístrate gratis y obtén acceso a tu primera clase sin costo.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="w-8 h-8 text-accent" />
+                </div>
+                <div className="text-sm font-medium text-accent mb-2">Paso 2</div>
+                <h3 className="font-semibold mb-2">Agenda tu clase</h3>
+                <p className="text-sm text-muted-foreground">
+                  Elige el horario que mejor te acomode desde tu dashboard.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Video className="w-8 h-8 text-accent" />
+                </div>
+                <div className="text-sm font-medium text-accent mb-2">Paso 3</div>
+                <h3 className="font-semibold mb-2">Conéctate por Meet</h3>
+                <p className="text-sm text-muted-foreground">
+                  Recibirás un link de Google Meet para tu clase online.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 bg-primary">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              ¿Listo para empezar?
+            </h2>
+            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
+              Tu primera clase es completamente gratis. Sin compromiso, sin tarjeta de crédito.
+            </p>
+            <Link href="/registro">
+              <Button size="lg" className="bg-accent hover:bg-accent/90 text-lg px-8">
+                Agenda tu clase gratuita
+              </Button>
+            </Link>
+          </div>
+        </section>
       </main>
+
+      <Footer />
     </div>
   );
 }
