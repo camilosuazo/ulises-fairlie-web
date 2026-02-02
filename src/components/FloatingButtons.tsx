@@ -4,8 +4,7 @@ import { WhatsAppButton } from "./WhatsAppButton";
 import { ChatBot } from "./ChatBot";
 
 export function FloatingButtons() {
-  // Número de WhatsApp del profesor (cambiar por el real)
-  const whatsappNumber = "56912345678"; // Formato: código país + número sin espacios
+  const whatsappNumber = "56977520630";
 
   return (
     <>
