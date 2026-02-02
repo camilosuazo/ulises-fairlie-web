@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CheckCircle, Calendar, Video, BookOpen, Target, MessageCircle } from "lucide-react";
+import { CheckCircle, Calendar, Video, BookOpen, Target, MessageCircle, HelpCircle } from "lucide-react";
 
 export default function Home() {
   return (
@@ -184,6 +190,106 @@ export default function Home() {
                   Recibirás un link de Google Meet para tu clase online.
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="py-20 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <HelpCircle className="w-6 h-6 text-primary" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Preguntas frecuentes
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Resuelve tus dudas antes de comenzar. Si no encuentras lo que buscas,
+                contáctame por WhatsApp.
+              </p>
+            </div>
+
+            <div className="max-w-3xl mx-auto">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger className="text-left">
+                    ¿Cómo son las clases online?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Las clases son por Google Meet, una plataforma gratuita y fácil de usar.
+                    Solo necesitas una computadora o celular con conexión a internet.
+                    Recibirás el link de la clase en tu email antes de cada sesión.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2">
+                  <AccordionTrigger className="text-left">
+                    ¿Qué incluye la clase gratuita?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    La clase gratuita dura 60 minutos completos, igual que una clase regular.
+                    Evaluaré tu nivel actual, conoceremos tus objetivos y te mostraré mi metodología.
+                    No hay compromiso de continuar después.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-3">
+                  <AccordionTrigger className="text-left">
+                    ¿Puedo cancelar o reprogramar una clase?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Sí, puedes cancelar o reprogramar hasta 24 horas antes de la clase
+                    sin ningún problema. Las clases canceladas con menos de 24 horas de
+                    anticipación se consideran tomadas.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-4">
+                  <AccordionTrigger className="text-left">
+                    ¿Qué nivel de inglés necesito para comenzar?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Ninguno en particular. Trabajo con estudiantes de todos los niveles,
+                    desde principiantes absolutos hasta avanzados que quieren perfeccionar
+                    su inglés. Las clases se adaptan completamente a tu nivel.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-5">
+                  <AccordionTrigger className="text-left">
+                    ¿Cómo funcionan los pagos?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Puedes pagar por transferencia bancaria o mediante los métodos disponibles
+                    en la plataforma. El pago se realiza al inicio de cada mes según el plan
+                    que elijas.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-6">
+                  <AccordionTrigger className="text-left">
+                    ¿Cuánto tiempo toma ver resultados?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Depende de tu nivel inicial y frecuencia de clases, pero la mayoría de
+                    mis alumnos notan mejoras en su confianza y fluidez desde las primeras
+                    semanas. Para objetivos específicos como certificaciones, trabajamos
+                    con un plan personalizado.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-7">
+                  <AccordionTrigger className="text-left">
+                    ¿Qué horarios hay disponibles?
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    Ofrezco clases de lunes a sábado en horarios flexibles. Una vez registrado,
+                    podrás ver mi disponibilidad actualizada y elegir el horario que mejor
+                    te acomode desde tu dashboard.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </div>
         </section>

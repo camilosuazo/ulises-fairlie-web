@@ -26,6 +26,9 @@ export function Header() {
           <Link href="/planes" className="text-sm font-medium hover:text-primary transition-colors">
             Planes
           </Link>
+          <Link href="/#faq" className="text-sm font-medium hover:text-primary transition-colors">
+            FAQ
+          </Link>
           <Link href="/login">
             <Button variant="outline" size="sm">
               Iniciar sesión
@@ -72,6 +75,13 @@ export function Header() {
               onClick={() => setIsMenuOpen(false)}
             >
               Planes
+            </Link>
+            <Link
+              href="/#faq"
+              className="text-sm font-medium hover:text-primary"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              FAQ
             </Link>
             <div className="flex flex-col space-y-2 pt-2">
               <Link href="/login" onClick={() => setIsMenuOpen(false)}>

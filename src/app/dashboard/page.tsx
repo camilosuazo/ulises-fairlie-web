@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, ScheduledClass, Availability, BlockedDate } from "@/lib/supabase/types";
 
@@ -434,6 +434,26 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* Resources Card */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FolderOpen className="w-5 h-5 text-primary" />
+                  Recursos
+                </CardTitle>
+                <CardDescription>
+                  Material de apoyo para complementar tus clases
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/dashboard/recursos">
+                  <Button variant="outline" className="w-full">
+                    Ver materiales
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
 
             {/* Info Card */}
             <Card>
