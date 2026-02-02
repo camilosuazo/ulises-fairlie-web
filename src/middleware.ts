@@ -31,30 +31,34 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Rutas protegidas
+  const pathname = request.nextUrl.pathname
+
+  // Rutas protegidas para estudiantes
   const protectedRoutes = ['/dashboard']
-  const adminRoutes = ['/admin']
+
+  // Ruta de login del admin (debe ser accesible sin auth)
+  const isAdminLoginRoute = pathname === '/admin/login'
+
+  // Rutas del admin (excepto login)
+  const isAdminRoute = pathname.startsWith('/admin') && !isAdminLoginRoute
 
   const isProtectedRoute = protectedRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
   )
 
-  const isAdminRoute = adminRoutes.some(route =>
-    request.nextUrl.pathname.startsWith(route)
-  )
-
-  // Si no hay usuario y trata de acceder a ruta protegida, redirigir a login
+  // Si no hay usuario y trata de acceder a ruta protegida de estudiante
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Para admin, verificar is_admin en la base de datos
+  // Para rutas de admin (excepto /admin/login)
   if (isAdminRoute) {
     if (!user) {
+      // No autenticado -> redirigir a login de admin
       const url = request.nextUrl.clone()
-      url.pathname = '/login'
+      url.pathname = '/admin/login'
       return NextResponse.redirect(url)
     }
 
@@ -66,8 +70,24 @@ export async function middleware(request: NextRequest) {
       .single()
 
     if (!profile?.is_admin) {
+      // No es admin -> redirigir a dashboard de estudiante
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Si es admin y está en /admin/login, redirigir a /admin
+  if (isAdminLoginRoute && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.is_admin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/admin'
       return NextResponse.redirect(url)
     }
   }
