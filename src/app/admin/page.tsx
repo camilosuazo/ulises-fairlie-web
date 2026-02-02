@@ -23,10 +23,21 @@ import {
   Trash2,
   Settings,
   Ban,
-  Loader2
+  Loader2,
+  FolderOpen,
+  Plus,
+  FileText,
+  Link as LinkIcon,
+  Headphones,
+  UserPlus
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, ScheduledClass, Availability, BlockedDate } from "@/lib/supabase/types";
+import type { Profile, ScheduledClass, Availability, BlockedDate, Resource, StudentResource } from "@/lib/supabase/types";
 
 const DAYS = [
   { id: 0, name: "Domingo", short: "Dom" },
@@ -57,6 +68,20 @@ export default function AdminPage() {
   const [students, setStudents] = useState<Profile[]>([]);
   const [classToCancel, setClassToCancel] = useState<string | null>(null);
   const [dateToBlock, setDateToBlock] = useState<Date | undefined>(undefined);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [studentResources, setStudentResources] = useState<StudentResource[]>([]);
+  const [isAddingResource, setIsAddingResource] = useState(false);
+  const [isAssigningResource, setIsAssigningResource] = useState(false);
+  const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
+  const [selectedStudentsForResource, setSelectedStudentsForResource] = useState<string[]>([]);
+  const [newResource, setNewResource] = useState({
+    title: "",
+    description: "",
+    category: "Vocabulario",
+    level: "Todos",
+    resource_type: "pdf",
+    url: ""
+  });
   const [stats, setStats] = useState({
     totalStudents: 0,
     activeStudents: 0,
@@ -132,6 +157,25 @@ export default function AdminPage() {
 
       if (classesCount !== null) {
         setStats(prev => ({ ...prev, classesThisMonth: classesCount }));
+      }
+
+      // Load resources
+      const { data: resourcesData } = await supabase
+        .from('resources')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (resourcesData) {
+        setResources(resourcesData);
+      }
+
+      // Load student resources assignments
+      const { data: studentResourcesData } = await supabase
+        .from('student_resources')
+        .select('*, resources(*), profiles(*)');
+
+      if (studentResourcesData) {
+        setStudentResources(studentResourcesData);
       }
 
     } catch (error) {
@@ -267,6 +311,101 @@ export default function AdminPage() {
     return blockedDates.some(b => b.blocked_date === dateStr);
   };
 
+  const addResource = async () => {
+    if (!newResource.title || !newResource.url) return;
+
+    try {
+      await supabase
+        .from('resources')
+        .insert({
+          title: newResource.title,
+          description: newResource.description || null,
+          category: newResource.category,
+          level: newResource.level,
+          resource_type: newResource.resource_type,
+          url: newResource.url
+        });
+
+      setNewResource({
+        title: "",
+        description: "",
+        category: "Vocabulario",
+        level: "Todos",
+        resource_type: "pdf",
+        url: ""
+      });
+      setIsAddingResource(false);
+      await loadData();
+    } catch (error) {
+      console.error('Error adding resource:', error);
+    }
+  };
+
+  const deleteResource = async (resourceId: string) => {
+    try {
+      await supabase
+        .from('resources')
+        .delete()
+        .eq('id', resourceId);
+      await loadData();
+    } catch (error) {
+      console.error('Error deleting resource:', error);
+    }
+  };
+
+  const assignResourceToStudents = async () => {
+    if (!selectedResource || selectedStudentsForResource.length === 0) return;
+
+    try {
+      const assignments = selectedStudentsForResource.map(studentId => ({
+        student_id: studentId,
+        resource_id: selectedResource.id
+      }));
+
+      await supabase
+        .from('student_resources')
+        .upsert(assignments, { onConflict: 'student_id,resource_id' });
+
+      setIsAssigningResource(false);
+      setSelectedResource(null);
+      setSelectedStudentsForResource([]);
+      await loadData();
+    } catch (error) {
+      console.error('Error assigning resource:', error);
+    }
+  };
+
+  const removeResourceFromStudent = async (studentResourceId: string) => {
+    try {
+      await supabase
+        .from('student_resources')
+        .delete()
+        .eq('id', studentResourceId);
+      await loadData();
+    } catch (error) {
+      console.error('Error removing resource:', error);
+    }
+  };
+
+  const getStudentsWithResource = (resourceId: string) => {
+    return studentResources.filter(sr => sr.resource_id === resourceId);
+  };
+
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case "pdf":
+        return <FileText className="w-4 h-4" />;
+      case "audio":
+        return <Headphones className="w-4 h-4" />;
+      case "video":
+        return <Video className="w-4 h-4" />;
+      case "link":
+        return <LinkIcon className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -364,6 +503,7 @@ export default function AdminPage() {
             <TabsTrigger value="agenda">Agenda</TabsTrigger>
             <TabsTrigger value="availability">Disponibilidad</TabsTrigger>
             <TabsTrigger value="students">Alumnos</TabsTrigger>
+            <TabsTrigger value="resources">Recursos</TabsTrigger>
           </TabsList>
 
           {/* Agenda Tab */}
@@ -698,6 +838,162 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Resources Tab */}
+          <TabsContent value="resources">
+            <div className="space-y-6">
+              {/* Add Resource Button */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-semibold">Gestionar Recursos</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Agrega materiales y asígnalos a tus alumnos
+                  </p>
+                </div>
+                <Button onClick={() => setIsAddingResource(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar recurso
+                </Button>
+              </div>
+
+              {/* Resources List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FolderOpen className="w-5 h-5" />
+                    Mis Recursos ({resources.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {resources.length > 0 ? (
+                    <div className="space-y-4">
+                      {resources.map((resource) => {
+                        const assignedStudents = getStudentsWithResource(resource.id);
+                        return (
+                          <div
+                            key={resource.id}
+                            className="p-4 border rounded-lg"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 bg-primary/10 rounded-lg mt-1">
+                                  {getResourceIcon(resource.resource_type)}
+                                </div>
+                                <div>
+                                  <h3 className="font-medium">{resource.title}</h3>
+                                  {resource.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {resource.description}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Badge variant="outline">{resource.category}</Badge>
+                                    {resource.level && (
+                                      <Badge variant="secondary">{resource.level}</Badge>
+                                    )}
+                                  </div>
+                                  <a
+                                    href={resource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary hover:underline mt-2 block"
+                                  >
+                                    Ver enlace
+                                  </a>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedResource(resource);
+                                    setIsAssigningResource(true);
+                                  }}
+                                >
+                                  <UserPlus className="w-4 h-4 mr-1" />
+                                  Asignar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                  onClick={() => deleteResource(resource.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Assigned Students */}
+                            {assignedStudents.length > 0 && (
+                              <div className="mt-4 pt-4 border-t">
+                                <p className="text-sm font-medium mb-2">
+                                  Asignado a {assignedStudents.length} alumno(s):
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  {assignedStudents.map((sr) => (
+                                    <Badge
+                                      key={sr.id}
+                                      variant="secondary"
+                                      className="flex items-center gap-1"
+                                    >
+                                      {sr.profiles?.full_name || sr.profiles?.email}
+                                      <button
+                                        onClick={() => removeResourceFromStudent(sr.id)}
+                                        className="ml-1 hover:text-red-500"
+                                      >
+                                        <XCircle className="w-3 h-3" />
+                                      </button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">
+                        No hay recursos todavía
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-4"
+                        onClick={() => setIsAddingResource(true)}
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Agregar primer recurso
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Info Card */}
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <LinkIcon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">¿Cómo subir recursos?</p>
+                      <ol className="text-sm text-muted-foreground mt-2 space-y-1 list-decimal list-inside">
+                        <li>Sube tu archivo (PDF, audio, etc.) a Google Drive</li>
+                        <li>Clic derecho → "Compartir" → "Cualquier persona con el enlace"</li>
+                        <li>Copia el enlace y pégalo aquí al crear el recurso</li>
+                        <li>Asigna el recurso a los alumnos que quieras</li>
+                      </ol>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -716,6 +1012,190 @@ export default function AdminPage() {
             </Button>
             <Button variant="destructive" onClick={() => classToCancel && cancelClass(classToCancel)}>
               Sí, cancelar clase
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Resource Dialog */}
+      <Dialog open={isAddingResource} onOpenChange={setIsAddingResource}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Agregar nuevo recurso</DialogTitle>
+            <DialogDescription>
+              Agrega un material de estudio para tus alumnos
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Título *</Label>
+              <Input
+                id="title"
+                placeholder="Ej: Vocabulario de Negocios"
+                value={newResource.title}
+                onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                placeholder="Breve descripción del material..."
+                value={newResource.description}
+                onChange={(e) => setNewResource({ ...newResource, description: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Categoría</Label>
+                <Select
+                  value={newResource.category}
+                  onValueChange={(value) => setNewResource({ ...newResource, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Vocabulario">Vocabulario</SelectItem>
+                    <SelectItem value="Gramática">Gramática</SelectItem>
+                    <SelectItem value="Entrevistas">Entrevistas</SelectItem>
+                    <SelectItem value="Listening">Listening</SelectItem>
+                    <SelectItem value="Reading">Reading</SelectItem>
+                    <SelectItem value="Speaking">Speaking</SelectItem>
+                    <SelectItem value="Recursos Externos">Recursos Externos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Nivel</Label>
+                <Select
+                  value={newResource.level}
+                  onValueChange={(value) => setNewResource({ ...newResource, level: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Todos">Todos los niveles</SelectItem>
+                    <SelectItem value="Básico">Básico</SelectItem>
+                    <SelectItem value="Intermedio">Intermedio</SelectItem>
+                    <SelectItem value="Avanzado">Avanzado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de recurso</Label>
+              <Select
+                value={newResource.resource_type}
+                onValueChange={(value) => setNewResource({ ...newResource, resource_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pdf">PDF / Documento</SelectItem>
+                  <SelectItem value="audio">Audio</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="link">Enlace externo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="url">Enlace de Google Drive *</Label>
+              <Input
+                id="url"
+                placeholder="https://drive.google.com/..."
+                value={newResource.url}
+                onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddingResource(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={addResource}
+              disabled={!newResource.title || !newResource.url}
+            >
+              Agregar recurso
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Resource Dialog */}
+      <Dialog open={isAssigningResource} onOpenChange={setIsAssigningResource}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Asignar recurso a alumnos</DialogTitle>
+            <DialogDescription>
+              {selectedResource?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm font-medium mb-4">Selecciona los alumnos:</p>
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+              {students.map((student) => {
+                const isAssigned = studentResources.some(
+                  sr => sr.student_id === student.id && sr.resource_id === selectedResource?.id
+                );
+                return (
+                  <div
+                    key={student.id}
+                    className="flex items-center space-x-3 p-3 border rounded-lg"
+                  >
+                    <Checkbox
+                      id={student.id}
+                      checked={selectedStudentsForResource.includes(student.id) || isAssigned}
+                      disabled={isAssigned}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedStudentsForResource([...selectedStudentsForResource, student.id]);
+                        } else {
+                          setSelectedStudentsForResource(
+                            selectedStudentsForResource.filter(id => id !== student.id)
+                          );
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={student.id}
+                      className="flex-1 text-sm cursor-pointer"
+                    >
+                      <span className="font-medium">{student.full_name || 'Sin nombre'}</span>
+                      <span className="text-muted-foreground ml-2">{student.email}</span>
+                      {isAssigned && (
+                        <Badge variant="secondary" className="ml-2 text-xs">Ya asignado</Badge>
+                      )}
+                    </label>
+                  </div>
+                );
+              })}
+              {students.length === 0 && (
+                <p className="text-center text-muted-foreground py-4">
+                  No hay alumnos registrados
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsAssigningResource(false);
+                setSelectedResource(null);
+                setSelectedStudentsForResource([]);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={assignResourceToStudents}
+              disabled={selectedStudentsForResource.length === 0}
+            >
+              Asignar a {selectedStudentsForResource.length} alumno(s)
             </Button>
           </DialogFooter>
         </DialogContent>

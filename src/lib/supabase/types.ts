@@ -73,3 +73,25 @@ export interface Payment {
   external_id: string | null;
   created_at: string;
 }
+
+export interface Resource {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  level: string | null;
+  resource_type: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StudentResource {
+  id: string;
+  student_id: string;
+  resource_id: string;
+  assigned_at: string;
+  // Joined data
+  resources?: Resource;
+  profiles?: Profile;
+}
