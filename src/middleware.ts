@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Para admin, verificar que sea el profesor (por email)
+  // Para admin, verificar is_admin en la base de datos
   if (isAdminRoute) {
     if (!user) {
       const url = request.nextUrl.clone()
@@ -58,9 +58,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // Verificar si es admin (puedes cambiar este email)
-    const adminEmail = process.env.ADMIN_EMAIL || 'ulises@ulisesfairlie.com'
-    if (user.email !== adminEmail) {
+    // Verificar si es admin en la base de datos
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.is_admin) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
