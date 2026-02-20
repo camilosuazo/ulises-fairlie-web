@@ -169,32 +169,22 @@ export default function DashboardPage() {
     setIsBooking(true);
 
     try {
-      // Generate a simple meet link (in production, use Google Calendar API)
-      const meetLink = `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
+      const response = await fetch("/api/classes/book", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: selectedDate.toISOString().split("T")[0],
+          time: selectedTime,
+        }),
+      });
 
-      // Create scheduled class
-      const { error: classError } = await supabase
-        .from('scheduled_classes')
-        .insert({
-          user_id: user.id,
-          scheduled_date: selectedDate.toISOString().split('T')[0],
-          scheduled_time: selectedTime,
-          meet_link: meetLink,
-          status: 'scheduled'
-        });
+      const data = (await response.json()) as { error?: string };
 
-      if (classError) throw classError;
-
-      // Update user's classes remaining
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          classes_remaining: user.classes_remaining - 1,
-          free_class_used: user.classes_remaining === 1 && !user.current_plan
-        })
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
+      if (!response.ok) {
+        throw new Error(data.error || "Error al agendar la clase.");
+      }
 
       // Reload data
       await loadData();
@@ -204,7 +194,9 @@ export default function DashboardPage() {
       setSelectedTime(null);
     } catch (error) {
       console.error('Error booking class:', error);
-      alert('Error al agendar la clase. Intenta de nuevo.');
+      const message =
+        error instanceof Error ? error.message : "Error al agendar la clase. Intenta de nuevo.";
+      alert(message);
     } finally {
       setIsBooking(false);
     }

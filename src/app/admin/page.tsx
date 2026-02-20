@@ -29,7 +29,8 @@ import {
   FileText,
   Link as LinkIcon,
   Headphones,
-  UserPlus
+  UserPlus,
+  Eye
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -826,6 +827,12 @@ export default function AdminPage() {
                               {student.classes_remaining} clases restantes
                             </p>
                           </div>
+                          <Link href={`/admin/alumnos/${student.id}`}>
+                            <Button size="sm" variant="outline">
+                              <Eye className="w-4 h-4 mr-2" />
+                              Ver perfil
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                     ))}

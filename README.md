@@ -58,3 +58,16 @@ Configure:
 Run `supabase-mercadopago-schema.sql` in Supabase SQL Editor.
 
 When a payment is approved, credits are automatically added and user plan/subscription is updated.
+
+## Google Meet Auto-Link
+
+Class booking now creates a real Google Meet link through Google Calendar API (`POST /api/classes/book`).
+
+Required env vars:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REFRESH_TOKEN`
+- `GOOGLE_CALENDAR_ID` (use `primary` for your own calendar)
+- `GOOGLE_CALENDAR_TIMEZONE` (example: `America/Santiago`)
+- `GOOGLE_MEET_OWNER_EMAIL` (teacher email)
