@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ import type { Profile, ScheduledClass, Availability, BlockedDate, Plan } from "@
 
 export default function DashboardPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<Profile | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -111,8 +110,9 @@ export default function DashboardPage() {
   }, [loadData]);
 
   useEffect(() => {
-    const paymentStatus = searchParams.get("payment_status");
-    const paymentId = searchParams.get("payment_id");
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get("payment_status");
+    const paymentId = params.get("payment_id");
 
     if (!paymentStatus) return;
 
@@ -155,7 +155,7 @@ export default function DashboardPage() {
 
       void syncPayment();
     }
-  }, [hasSyncedReturnPayment, loadData, searchParams]);
+  }, [hasSyncedReturnPayment, loadData]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
