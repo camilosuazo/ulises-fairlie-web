@@ -37,10 +37,6 @@ export default function DashboardPage() {
 
   const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
-
   const loadData = useCallback(async () => {
     try {
       // Get current user
@@ -109,6 +105,10 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, [router, supabase]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   useEffect(() => {
     const paymentStatus = searchParams.get("payment_status");
