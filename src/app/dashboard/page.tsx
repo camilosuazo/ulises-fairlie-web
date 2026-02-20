@@ -2,23 +2,27 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, ScheduledClass, Availability, BlockedDate } from "@/lib/supabase/types";
+import { formatPrice } from "@/lib/data";
+import type { Profile, ScheduledClass, Availability, BlockedDate, Plan } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<Profile | null>(null);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
@@ -26,14 +30,18 @@ export default function DashboardPage() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState<string | null>(null);
+  const [isSyncingPayment, setIsSyncingPayment] = useState(false);
+  const [hasSyncedReturnPayment, setHasSyncedReturnPayment] = useState(false);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+  }, [loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       // Get current user
       const { data: { user: authUser } } = await supabase.auth.getUser();
@@ -84,12 +92,70 @@ export default function DashboardPage() {
       if (blocked) {
         setBlockedDates(blocked);
       }
+
+      // Load active plans for checkout
+      const { data: activePlans } = await supabase
+        .from('plans')
+        .select('*')
+        .eq('active', true)
+        .order('price', { ascending: true });
+
+      if (activePlans) {
+        setPlans(activePlans);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router, supabase]);
+
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment_status");
+    const paymentId = searchParams.get("payment_id");
+
+    if (!paymentStatus) return;
+
+    if (paymentStatus === "approved") {
+      setPaymentStatusMessage("Pago aprobado. Estamos actualizando tus clases disponibles...");
+    } else if (paymentStatus === "pending") {
+      setPaymentStatusMessage("Tu pago está pendiente de confirmación. Te avisaremos cuando se acredite.");
+    } else {
+      setPaymentStatusMessage("No se completó el pago. Puedes intentarlo nuevamente cuando quieras.");
+    }
+
+    if (paymentStatus === "approved" && paymentId && !hasSyncedReturnPayment) {
+      const syncPayment = async () => {
+        try {
+          setIsSyncingPayment(true);
+          const response = await fetch("/api/payments/confirm", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ paymentId }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Sync failed");
+          }
+
+          await loadData();
+          setPaymentStatusMessage("Pago confirmado. Tus clases ya están disponibles.");
+        } catch (error) {
+          console.error("Payment sync error:", error);
+          setPaymentStatusMessage(
+            "Pago aprobado. Si no ves tus clases aún, recarga en unos segundos."
+          );
+        } finally {
+          setIsSyncingPayment(false);
+          setHasSyncedReturnPayment(true);
+        }
+      };
+
+      void syncPayment();
+    }
+  }, [hasSyncedReturnPayment, loadData, searchParams]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -141,6 +207,35 @@ export default function DashboardPage() {
       alert('Error al agendar la clase. Intenta de nuevo.');
     } finally {
       setIsBooking(false);
+    }
+  };
+
+  const handleCheckout = async (planId: string) => {
+    try {
+      setCheckoutPlanId(planId);
+      const response = await fetch("/api/payments/create-preference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ planId }),
+      });
+
+      const data = (await response.json()) as {
+        checkoutUrl?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !data.checkoutUrl) {
+        throw new Error(data.error || "No se pudo iniciar el pago.");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("No se pudo iniciar el pago. Intenta nuevamente.");
+    } finally {
+      setCheckoutPlanId(null);
     }
   };
 
@@ -213,6 +308,18 @@ export default function DashboardPage() {
             Bienvenido a tu panel de clases de inglés
           </p>
         </div>
+
+        {paymentStatusMessage && (
+          <div className="mb-6">
+            <Alert>
+              <AlertTitle>Estado de pago</AlertTitle>
+              <AlertDescription>
+                {paymentStatusMessage}
+                {isSyncingPayment ? " Validando con Mercado Pago..." : ""}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
@@ -339,15 +446,48 @@ export default function DashboardPage() {
                     </DialogContent>
                   </Dialog>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground mb-4">
-                      No tienes clases disponibles
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground text-center">
+                      Ya usaste tu clase disponible. Elige un plan y paga con Mercado Pago para continuar.
                     </p>
-                    <Link href="/planes">
-                      <Button className="bg-primary hover:bg-primary/90">
-                        Ver planes
-                      </Button>
-                    </Link>
+                    {plans.length > 0 ? (
+                      <div className="grid md:grid-cols-3 gap-3">
+                        {plans.map((plan) => (
+                          <div key={plan.id} className="border rounded-lg p-4 bg-muted/20">
+                            <p className="font-semibold">{plan.name}</p>
+                            <p className="text-2xl font-bold mt-1">
+                              {formatPrice(plan.price, plan.currency)}
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              {plan.classes_per_month} clases / mes
+                            </p>
+                            <Button
+                              className="w-full bg-primary hover:bg-primary/90"
+                              onClick={() => handleCheckout(plan.id)}
+                              disabled={checkoutPlanId !== null}
+                            >
+                              {checkoutPlanId === plan.id ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Redirigiendo...
+                                </>
+                              ) : (
+                                "Pagar con Mercado Pago"
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          No pudimos cargar los planes en este momento.
+                        </p>
+                        <Link href="/planes">
+                          <Button variant="outline">Ver planes</Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

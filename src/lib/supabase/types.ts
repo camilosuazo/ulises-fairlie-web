@@ -69,8 +69,14 @@ export interface Payment {
   amount: number;
   currency: string;
   status: 'pending' | 'approved' | 'rejected';
+  provider: string | null;
+  provider_preference_id: string | null;
+  provider_payment_id: string | null;
   payment_method: string | null;
+  external_reference: string | null;
   external_id: string | null;
+  status_detail: string | null;
+  processed_at: string | null;
   created_at: string;
 }
 
