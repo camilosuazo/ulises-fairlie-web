@@ -82,7 +82,7 @@ export async function POST(request: Request) {
           },
           { onConflict: "id" }
         )
-        .select("id, name, price, currency, classes_per_month, active")
+        .select("id, name, description, price, currency, classes_per_month, features, popular, active")
         .single();
 
       if (upsertPlanError) {
