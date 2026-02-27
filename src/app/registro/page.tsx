@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { PaymentMethodsCard } from "@/components/PaymentMethodsCard";
 import { CheckCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -211,6 +212,9 @@ export default function RegistroPage() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+          <div className="max-w-4xl mx-auto mt-8">
+            <PaymentMethodsCard />
           </div>
         </div>
       </main>

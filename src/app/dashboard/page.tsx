@@ -14,14 +14,13 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatPrice } from "@/lib/data";
-import type { Profile, ScheduledClass, Availability, BlockedDate, Plan } from "@/lib/supabase/types";
+import { PlanSelector } from "@/components/PlanSelector";
+import type { Profile, ScheduledClass, Availability, BlockedDate } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<Profile | null>(null);
-  const [plans, setPlans] = useState<Plan[]>([]);
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
@@ -88,16 +87,6 @@ export default function DashboardPage() {
         setBlockedDates(blocked);
       }
 
-      // Load active plans for checkout
-      const { data: activePlans } = await supabase
-        .from('plans')
-        .select('*')
-        .eq('active', true)
-        .order('price', { ascending: true });
-
-      if (activePlans) {
-        setPlans(activePlans);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -442,44 +431,11 @@ export default function DashboardPage() {
                     <p className="text-muted-foreground text-center">
                       Ya usaste tu clase disponible. Elige un plan y paga con Mercado Pago para continuar.
                     </p>
-                    {plans.length > 0 ? (
-                      <div className="grid md:grid-cols-3 gap-3">
-                        {plans.map((plan) => (
-                          <div key={plan.id} className="border rounded-lg p-4 bg-muted/20">
-                            <p className="font-semibold">{plan.name}</p>
-                            <p className="text-2xl font-bold mt-1">
-                              {formatPrice(plan.price, plan.currency)}
-                            </p>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {plan.classes_per_month} clases / mes
-                            </p>
-                            <Button
-                              className="w-full bg-primary hover:bg-primary/90"
-                              onClick={() => handleCheckout(plan.id)}
-                              disabled={checkoutPlanId !== null}
-                            >
-                              {checkoutPlanId === plan.id ? (
-                                <>
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  Redirigiendo...
-                                </>
-                              ) : (
-                                "Pagar con Mercado Pago"
-                              )}
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground mb-3">
-                          No pudimos cargar los planes en este momento.
-                        </p>
-                        <Link href="/planes">
-                          <Button variant="outline">Ver planes</Button>
-                        </Link>
-                      </div>
-                    )}
+                    <PlanSelector
+                      onSelectPlan={handleCheckout}
+                      loadingPlanId={checkoutPlanId}
+                      compact
+                    />
                   </div>
                 )}
               </CardContent>

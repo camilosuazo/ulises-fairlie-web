@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { findCatalogPlanById } from "@/lib/plan-catalog";
 
 interface CreatePreferenceBody {
   planId?: string;
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
 
     const admin = createAdminClient();
 
-    const [{ data: profile, error: profileError }, { data: plan, error: planError }] =
+    const [{ data: profile, error: profileError }, { data: dbPlan, error: planError }] =
       await Promise.all([
         admin
           .from("profiles")
@@ -43,17 +44,52 @@ export async function POST(request: Request) {
           .single(),
         admin
           .from("plans")
-          .select("id, name, price, currency, classes_per_month, active")
+          .select("id, name, description, price, currency, classes_per_month, features, popular, active")
           .eq("id", planId)
-          .single(),
+          .maybeSingle(),
       ]);
 
     if (profileError) {
       throw profileError;
     }
 
-    if (planError || !plan?.active) {
-      return NextResponse.json({ error: "Plan not available." }, { status: 404 });
+    if (planError) {
+      throw planError;
+    }
+
+    let plan = dbPlan;
+
+    if (!plan || !plan.active) {
+      const catalogPlan = findCatalogPlanById(planId);
+
+      if (!catalogPlan) {
+        return NextResponse.json({ error: "Plan not available." }, { status: 404 });
+      }
+
+      const { data: upsertedPlan, error: upsertPlanError } = await admin
+        .from("plans")
+        .upsert(
+          {
+            id: catalogPlan.id,
+            name: catalogPlan.name,
+            description: catalogPlan.description,
+            price: catalogPlan.price,
+            currency: catalogPlan.currency,
+            classes_per_month: catalogPlan.totalClasses,
+            features: catalogPlan.features,
+            popular: Boolean(catalogPlan.popular),
+            active: true,
+          },
+          { onConflict: "id" }
+        )
+        .select("id, name, price, currency, classes_per_month, active")
+        .single();
+
+      if (upsertPlanError) {
+        throw upsertPlanError;
+      }
+
+      plan = upsertedPlan;
     }
 
     const { data: payment, error: paymentInsertError } = await admin

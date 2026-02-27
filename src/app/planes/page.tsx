@@ -1,140 +1,120 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+export const dynamic = "force-dynamic";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Check } from "lucide-react";
-import { plans, formatPrice } from "@/lib/data";
+import { PlanSelector } from "@/components/PlanSelector";
+import { PaymentMethodsCard } from "@/components/PaymentMethodsCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2 } from "lucide-react";
+
+const standardConditions = [
+  "Clases online",
+  "60 minutos",
+  "Compromiso mensual",
+  "Descuento por pago anticipado",
+];
+
+const includeItems = [
+  "Metodología comunicativa",
+  "Material digital personalizado",
+  "Seguimiento y feedback constante",
+  "Enfoque en inglés general y profesional",
+];
 
 export default function PlanesPage() {
+  const router = useRouter();
+  const [checkoutPlanId, setCheckoutPlanId] = useState<string | null>(null);
+
+  const handleCheckout = async (planId: string) => {
+    try {
+      setCheckoutPlanId(planId);
+      const response = await fetch("/api/payments/create-preference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ planId }),
+      });
+
+      if (response.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      const data = (await response.json()) as { checkoutUrl?: string; error?: string };
+
+      if (!response.ok || !data.checkoutUrl) {
+        throw new Error(data.error || "No se pudo iniciar el pago.");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("No se pudo iniciar el pago. Intenta nuevamente.");
+    } finally {
+      setCheckoutPlanId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1">
-        <section className="py-20 bg-gradient-to-b from-muted/50 to-white">
+      <main className="flex-1 bg-gradient-to-b from-muted/40 to-white">
+        <section className="py-16 md:py-20">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                Planes de clases
-              </h1>
-              <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                Elige el plan que mejor se adapte a tus objetivos y disponibilidad.
-                Todos incluyen clases personalizadas one-to-one.
+            <div className="text-center mb-10">
+              <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/10">Planes 2026</Badge>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">Planes de pago</h1>
+              <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
+                Elige tu modalidad, selecciona duración y paga en línea con Mercado Pago.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {plans.map((plan) => (
-                <Card
-                  key={plan.id}
-                  className={`relative ${
-                    plan.popular
-                      ? "border-primary shadow-lg scale-105"
-                      : "border-border"
-                  }`}
-                >
-                  {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
-                      Más popular
-                    </Badge>
-                  )}
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                    <div className="pt-4">
-                      <span className="text-4xl font-bold">
-                        {formatPrice(plan.price, plan.currency)}
-                      </span>
-                      <span className="text-muted-foreground">/mes</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {plan.classesPerMonth} clases de 60 min
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3 mb-6">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link href="/registro" className="block">
-                      <Button
-                        className={`w-full ${
-                          plan.popular
-                            ? "bg-primary hover:bg-primary/90"
-                            : "bg-accent hover:bg-accent/90"
-                        }`}
-                      >
-                        Elegir plan
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+            <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+              {standardConditions.map((condition) => (
+                <div key={condition} className="rounded-lg border bg-white p-3 text-center text-sm font-medium">
+                  {condition}
+                </div>
               ))}
             </div>
 
-            <div className="text-center mt-12">
-              <p className="text-muted-foreground mb-4">
-                ¿No estás seguro? Prueba primero con una clase gratuita.
-              </p>
-              <Link href="/registro">
-                <Button variant="outline" size="lg">
-                  Agenda tu clase gratuita
-                </Button>
-              </Link>
+            <Card className="max-w-7xl mx-auto border-primary/20 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl">Selecciona tu plan</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PlanSelector onSelectPlan={handleCheckout} loadingPlanId={checkoutPlanId} />
+              </CardContent>
+            </Card>
+            <div className="max-w-5xl mx-auto mt-8">
+              <PaymentMethodsCard />
             </div>
           </div>
         </section>
 
-        {/* FAQ Section */}
-        <section className="py-20 bg-white">
+        <section className="pb-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center mb-12">
-              Preguntas frecuentes
-            </h2>
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div className="border-b pb-6">
-                <h3 className="font-semibold mb-2">
-                  ¿Puedo cambiar de plan después?
-                </h3>
-                <p className="text-muted-foreground">
-                  Sí, puedes cambiar tu plan en cualquier momento. El cambio se
-                  aplicará en tu siguiente ciclo de facturación.
-                </p>
-              </div>
-              <div className="border-b pb-6">
-                <h3 className="font-semibold mb-2">
-                  ¿Qué pasa si no puedo asistir a una clase?
-                </h3>
-                <p className="text-muted-foreground">
-                  Puedes cancelar o reprogramar tu clase con al menos 24 horas de
-                  anticipación sin perder el crédito.
-                </p>
-              </div>
-              <div className="border-b pb-6">
-                <h3 className="font-semibold mb-2">
-                  ¿Las clases no usadas se acumulan?
-                </h3>
-                <p className="text-muted-foreground">
-                  Las clases no utilizadas se pueden acumular hasta el mes siguiente.
-                  Después de eso, expiran.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">
-                  ¿Cómo son las clases?
-                </h3>
-                <p className="text-muted-foreground">
-                  Las clases son online a través de Google Meet. Duran 60 minutos y
-                  están 100% enfocadas en tus necesidades específicas.
-                </p>
-              </div>
-            </div>
+            <Card className="max-w-5xl mx-auto">
+              <CardHeader>
+                <CardTitle>Incluye en todos los planes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {includeItems.map((item) => (
+                    <div key={item} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-accent mt-0.5" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       </main>
