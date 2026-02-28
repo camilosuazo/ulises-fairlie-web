@@ -78,11 +78,11 @@ export default function Home() {
                   Ayudo a estudiantes y profesionales a desarrollar fluidez, precisión y
                   confianza en inglés general y profesional.
                 </p>
-                <p className="text-muted-foreground">
-                  Formación en Traducción Inglés-Español (Instituto Chileno Británico) y
-                  certificaciones CELTA (Cambridge) y Profesor de Español como Lengua
-                  Extranjera (Universidad de Salamanca).
-                </p>
+                <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                  <li>Formación en Traducción Inglés-Español (Instituto Chileno Británico).</li>
+                  <li>Certificación CELTA (Cambridge).</li>
+                  <li>Certificación de Profesor de Español como Lengua Extranjera (Universidad de Salamanca).</li>
+                </ul>
               </div>
             </div>
           </div>
