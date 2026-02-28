@@ -181,10 +181,10 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-20 bg-primary">
+        <section className="py-20 bg-primary dark:bg-gradient-to-b dark:from-card dark:to-muted/80 dark:border-y dark:border-border">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Reserva tu cupo</h2>
-            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white dark:text-foreground mb-4">Reserva tu cupo</h2>
+            <p className="text-primary-foreground/80 dark:text-muted-foreground mb-8 max-w-xl mx-auto">
               Compromiso, constancia y resultados reales.
             </p>
             <Link href="/planes">
