@@ -14,11 +14,10 @@ import { PaymentMethodsCard } from "@/components/PaymentMethodsCard";
 import { CheckCircle, HelpCircle, Target } from "lucide-react";
 
 const methodologyPoints = [
-  "Enfoque comunicativo",
-  "Clases personalizadas según tus objetivos",
-  "Inglés general y profesional",
-  "Corrección clara y feedback constante",
-  "Material adaptado a tu nivel y necesidades",
+  "Metodología comunicativa",
+  "Material digital personalizado",
+  "Seguimiento y feedback constante",
+  "Enfoque en inglés general y profesional",
 ];
 
 export default function Home() {
@@ -118,7 +117,7 @@ export default function Home() {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Target className="h-5 w-5 text-primary" />
-                    <h3 className="font-semibold text-lg">En cada plan incluye</h3>
+                    <h3 className="font-semibold text-lg">Incluye en todos los planes</h3>
                   </div>
                   <ul className="space-y-3">
                     {methodologyPoints.map((point) => (

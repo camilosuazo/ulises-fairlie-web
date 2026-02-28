@@ -84,11 +84,14 @@ export function PlanSelector({
                       <p className="text-xs text-muted-foreground">
                         {plan.sessionsPerWeek} sesi\u00f3n{plan.sessionsPerWeek > 1 ? "es" : ""} por semana · 60 min
                       </p>
+                      <p className="text-xs text-muted-foreground">
+                        {plan.students} persona{plan.students > 1 ? "s" : ""} por grupo
+                      </p>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2 mb-4">
-                      {plan.features.slice(0, 2).map((feature) => (
+                      {plan.features.map((feature) => (
                         <li key={feature} className="flex items-start gap-2 text-xs text-muted-foreground">
                           <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
                           <span>{feature}</span>

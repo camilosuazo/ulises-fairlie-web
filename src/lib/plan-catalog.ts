@@ -30,13 +30,13 @@ export const PLAN_MODALITY_META: Record<
     badge: "2 personas",
   },
   group_3: {
-    title: "Grupal",
-    subtitle: "Din\u00e1mico, colaborativo y efectivo",
+    title: "Grupal 3 personas",
+    subtitle: "Grupo reducido para mayor participaci\u00f3n por clase",
     badge: "3 personas",
   },
   group_4: {
-    title: "Grupal",
-    subtitle: "La opci\u00f3n m\u00e1s conveniente por persona",
+    title: "Grupal 4 personas",
+    subtitle: "M\u00e1s conveniente por persona, manteniendo pr\u00e1ctica activa",
     badge: "4 personas",
   },
   flexible_1x: {
