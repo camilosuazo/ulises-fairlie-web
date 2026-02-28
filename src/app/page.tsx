@@ -57,17 +57,18 @@ export default function Home() {
         <section id="about" className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-              <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-2xl border bg-muted">
+              <div className="order-2 md:order-1 relative aspect-[4/5] md:aspect-square overflow-hidden rounded-2xl border bg-muted">
                 <Image
-                  src="/ulises-fairlie.png"
+                  src="/ulises-fairlie.jpg"
                   alt="Ulises Fairlie, profesor de inglés"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 40vw"
-                  priority
+                  loading="lazy"
+                  quality={80}
                 />
               </div>
-              <div>
+              <div className="order-1 md:order-2">
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">Presentación</h2>
                 <p className="text-primary font-semibold mb-3">Ulises Fairlie</p>
                 <p className="text-muted-foreground mb-4">
