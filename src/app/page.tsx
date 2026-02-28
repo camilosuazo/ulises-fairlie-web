@@ -26,7 +26,7 @@ export default function Home() {
       <Header />
 
       <main className="flex-1">
-        <section className="relative bg-gradient-to-b from-muted/50 to-white py-20 lg:py-28">
+        <section className="relative bg-gradient-to-b from-muted/50 to-background py-20 lg:py-28">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
@@ -53,7 +53,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="about" className="py-20 bg-white">
+        <section id="about" className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
               <div className="order-2 md:order-1 relative aspect-[4/5] md:aspect-square overflow-hidden rounded-2xl border bg-muted">
@@ -136,7 +136,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="faq" className="py-20 bg-white">
+        <section id="faq" className="py-20 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">

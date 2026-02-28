@@ -37,6 +37,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, ScheduledClass, Availability, BlockedDate, Resource, StudentResource } from "@/lib/supabase/types";
 
@@ -418,7 +419,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center space-x-2">
@@ -426,10 +427,13 @@ export default function AdminPage() {
             </Link>
             <Badge variant="secondary">Admin</Badge>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Salir
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Salir
+            </Button>
+          </div>
         </div>
       </header>
 

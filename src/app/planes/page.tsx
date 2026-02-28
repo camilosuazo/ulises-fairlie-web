@@ -65,7 +65,7 @@ export default function PlanesPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 bg-gradient-to-b from-muted/40 to-white">
+      <main className="flex-1 bg-gradient-to-b from-muted/40 to-background">
         <section className="py-16 md:py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
@@ -78,7 +78,7 @@ export default function PlanesPage() {
 
             <div className="max-w-5xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
               {standardConditions.map((condition) => (
-                <div key={condition} className="rounded-lg border bg-white p-3 text-center text-sm font-medium">
+                <div key={condition} className="rounded-lg border bg-card p-3 text-center text-sm font-medium">
                   {condition}
                 </div>
               ))}

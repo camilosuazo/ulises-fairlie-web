@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen, Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PlanSelector } from "@/components/PlanSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { Profile, ScheduledClass, Availability, BlockedDate, Payment } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
@@ -336,12 +337,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-muted/30">
       {/* Header del Dashboard */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-xl font-bold text-primary">Ulises Fairlie</span>
           </Link>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <span className="text-sm text-muted-foreground hidden sm:block">
               {user?.email}
             </span>

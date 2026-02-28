@@ -6,7 +6,7 @@ interface PaymentMethodsCardProps {
 
 export function PaymentMethodsCard({ className = "" }: PaymentMethodsCardProps) {
   return (
-    <div className={`rounded-2xl border bg-white/90 backdrop-blur p-4 sm:p-5 shadow-sm ${className}`}>
+    <div className={`rounded-2xl border bg-card/90 backdrop-blur p-4 sm:p-5 shadow-sm ${className}`}>
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
         <Image
           src="/mercado-pago.png"
