@@ -119,6 +119,17 @@ export default function LoginPage() {
                     Regístrate gratis
                   </Link>
                 </p>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Al usar la plataforma aceptas los{" "}
+                  <Link href="/terminos" className="text-primary hover:underline">
+                    Términos y Condiciones
+                  </Link>{" "}
+                  y la{" "}
+                  <Link href="/privacidad" className="text-primary hover:underline">
+                    Política de Privacidad
+                  </Link>
+                  .
+                </p>
               </div>
             </CardContent>
           </Card>

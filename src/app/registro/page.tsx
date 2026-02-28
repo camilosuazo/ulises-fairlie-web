@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PaymentMethodsCard } from "@/components/PaymentMethodsCard";
@@ -25,6 +26,7 @@ export default function RegistroPage() {
     password: "",
     confirmPassword: "",
   });
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +39,11 @@ export default function RegistroPage() {
 
     if (formData.password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+
+    if (!acceptedLegal) {
+      setError("Debes aceptar los Términos y Condiciones y la Política de Privacidad.");
       return;
     }
 
@@ -192,6 +199,24 @@ export default function RegistroPage() {
                       required
                       minLength={6}
                     />
+                  </div>
+                  <div className="flex items-start gap-2 rounded-md border p-3">
+                    <Checkbox
+                      id="legal"
+                      checked={acceptedLegal}
+                      onCheckedChange={(checked) => setAcceptedLegal(checked === true)}
+                    />
+                    <Label htmlFor="legal" className="text-sm leading-5">
+                      Acepto los{" "}
+                      <Link href="/terminos" className="text-primary hover:underline" target="_blank">
+                        Términos y Condiciones
+                      </Link>{" "}
+                      y la{" "}
+                      <Link href="/privacidad" className="text-primary hover:underline" target="_blank">
+                        Política de Privacidad
+                      </Link>
+                      .
+                    </Label>
                   </div>
                   <Button
                     type="submit"

@@ -24,6 +24,12 @@ export function Footer() {
               <Link href="/planes" className="text-sm text-muted-foreground hover:text-primary">
                 Planes
               </Link>
+              <Link href="/terminos" className="text-sm text-muted-foreground hover:text-primary">
+                Términos y condiciones
+              </Link>
+              <Link href="/privacidad" className="text-sm text-muted-foreground hover:text-primary">
+                Política de privacidad
+              </Link>
             </nav>
           </div>
 
