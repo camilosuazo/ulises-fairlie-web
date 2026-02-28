@@ -8,14 +8,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Video, LogOut, CreditCard, User, Loader2, FolderOpen, Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PlanSelector } from "@/components/PlanSelector";
-import type { Profile, ScheduledClass, Availability, BlockedDate } from "@/lib/supabase/types";
+import type { Profile, ScheduledClass, Availability, BlockedDate, Payment } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [scheduledClasses, setScheduledClasses] = useState<ScheduledClass[]>([]);
   const [availability, setAvailability] = useState<Availability[]>([]);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
@@ -32,6 +34,9 @@ export default function DashboardPage() {
   const [paymentStatusMessage, setPaymentStatusMessage] = useState<string | null>(null);
   const [isSyncingPayment, setIsSyncingPayment] = useState(false);
   const [hasSyncedReturnPayment, setHasSyncedReturnPayment] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
 
@@ -54,6 +59,7 @@ export default function DashboardPage() {
 
       if (profile) {
         setUser(profile);
+        setFullName(profile.full_name ?? "");
       }
 
       // Load user's scheduled classes
@@ -85,6 +91,18 @@ export default function DashboardPage() {
 
       if (blocked) {
         setBlockedDates(blocked);
+      }
+
+      // Load payment history
+      const { data: userPayments } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("user_id", authUser.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (userPayments) {
+        setPayments(userPayments);
       }
 
     } catch (error) {
@@ -220,6 +238,38 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    setIsSavingProfile(true);
+    setProfileMessage(null);
+
+    try {
+      const cleanedName = fullName.trim();
+      const { data: updatedProfile, error } = await supabase
+        .from("profiles")
+        .update({ full_name: cleanedName || null })
+        .eq("id", user.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (updatedProfile) {
+        setUser(updatedProfile);
+      }
+
+      setProfileMessage("Tus datos se guardaron correctamente.");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setProfileMessage("No se pudieron guardar tus datos. Intenta nuevamente.");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   const formatDate = (date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
     return new Intl.DateTimeFormat("es-CL", {
@@ -227,6 +277,30 @@ export default function DashboardPage() {
       day: "numeric",
       month: "long",
     }).format(d);
+  };
+
+  const formatDateTime = (date: string) => {
+    return new Intl.DateTimeFormat("es-CL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const paymentStatusLabel: Record<Payment["status"], string> = {
+    pending: "Pendiente",
+    approved: "Aprobado",
+    rejected: "Rechazado",
   };
 
   const getAvailableTimesForDate = (date: Date) => {
@@ -499,10 +573,100 @@ export default function DashboardPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Payment History */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Historial de pagos
+                </CardTitle>
+                <CardDescription>
+                  Últimos pagos realizados en tu cuenta
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {payments.length > 0 ? (
+                  <div className="space-y-3">
+                    {payments.map((payment) => (
+                      <div
+                        key={payment.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border p-3"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {formatCurrency(payment.amount, payment.currency)}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {formatDateTime(payment.created_at)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Medio: {payment.payment_method || "No informado"}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={payment.status === "approved" ? "default" : "secondary"}
+                        >
+                          {paymentStatusLabel[payment.status]}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">
+                    Aún no tienes pagos registrados
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Profile Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Mis datos</CardTitle>
+                <CardDescription>
+                  Guarda o modifica tu información personal
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium">Nombre completo</p>
+                  <Input
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    placeholder="Tu nombre completo"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium">Correo</p>
+                  <Input value={user?.email || ""} disabled />
+                </div>
+                {profileMessage && (
+                  <p className="text-xs text-muted-foreground">{profileMessage}</p>
+                )}
+                <Button
+                  className="w-full"
+                  onClick={handleSaveProfile}
+                  disabled={isSavingProfile}
+                >
+                  {isSavingProfile ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Guardar datos
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Upgrade Card */}
             {!user?.current_plan && (
               <Card className="border-primary">
