@@ -24,12 +24,6 @@ export function Footer() {
               <Link href="/planes" className="text-sm text-muted-foreground hover:text-primary">
                 Planes
               </Link>
-              <Link href="/terminos" className="text-sm text-muted-foreground hover:text-primary">
-                Términos y condiciones
-              </Link>
-              <Link href="/privacidad" className="text-sm text-muted-foreground hover:text-primary">
-                Política de privacidad
-              </Link>
             </nav>
           </div>
 
@@ -42,7 +36,20 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
+        <div className="border-t mt-8 pt-6">
+          <div className="text-center text-sm text-muted-foreground mb-4">
+            <span className="font-medium text-foreground/80 mr-2">Legal:</span>
+            <Link href="/terminos" className="hover:text-primary underline-offset-4 hover:underline">
+              Términos y condiciones
+            </Link>
+            <span className="mx-2">·</span>
+            <Link href="/privacidad" className="hover:text-primary underline-offset-4 hover:underline">
+              Política de privacidad
+            </Link>
+          </div>
+        </div>
+
+        <div className="text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Ulises Fairlie. Todos los derechos reservados.</p>
         </div>
       </div>
