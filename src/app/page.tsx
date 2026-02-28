@@ -71,12 +71,17 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-bold mb-6">Presentación</h2>
                 <p className="text-primary font-semibold mb-3">Ulises Fairlie</p>
                 <p className="text-muted-foreground mb-4">
-                  Profesor de inglés certificado por Cambridge (CELTA) y traductor profesional
-                  con más de 5 años de experiencia.
+                  Profesor de inglés, traductor inglés-español y tutor con experiencia en
+                  enseñanza personalizada para adultos y profesionales.
                 </p>
                 <p className="text-muted-foreground mb-4">
                   Ayudo a estudiantes y profesionales a desarrollar fluidez, precisión y
                   confianza en inglés general y profesional.
+                </p>
+                <p className="text-muted-foreground">
+                  Formación en Traducción Inglés-Español (Instituto Chileno Británico) y
+                  certificaciones CELTA (Cambridge) y Profesor de Español como Lengua
+                  Extranjera (Universidad de Salamanca).
                 </p>
               </div>
             </div>
